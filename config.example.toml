@@ -1,0 +1,13 @@
+[plugin]
+enabled = false
+config_version = "0.1.0"
+bot_account_id = ""
+private_users = []
+group_ids = []
+model_name = "deepseek-flash-affect"
+half_life_days = 30
+daily_limit = 8
+max_items = 6
+max_chars = 800
+extraction_interval = 120
+webui_test_prefix = "memory-acceptance-"

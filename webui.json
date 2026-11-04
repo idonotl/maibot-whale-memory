@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "required_capabilities": ["declarative_basic"],
+  "workspace_title": "鱼的记忆 · 麦麦试用",
+  "pages": [{
+    "id": "overview", "title": "记忆与状态", "placement": "workspace", "icon": "database",
+    "mode": "declarative", "poll_interval_seconds": 0,
+    "description": "独立适配试用版；词法召回，无嵌入模型。私聊与各群隔离。旧事实 superseded 不再召回。",
+    "queries": {"runtime": {"api": "memory_status", "version": "1"}, "memories": {"api": "memory_list", "version": "1"}},
+    "content": [
+      {"type": "grid", "label": "运行情况", "columns": 4, "children": [
+        {"type": "stat", "label": "已就绪", "value": {"scope": "query", "source": "runtime", "field": "ready"}},
+        {"type": "stat", "label": "新增记忆", "value": {"scope": "query", "source": "runtime", "field": "stats.extracted"}},
+        {"type": "stat", "label": "注入次数", "value": {"scope": "query", "source": "runtime", "field": "stats.injected"}},
+        {"type": "stat", "label": "异常次数", "value": {"scope": "query", "source": "runtime", "field": "stats.errors"}}
+      ]},
+      {"type": "table", "label": "最近100条记忆（仅本地管理页）", "value": {"scope": "query", "source": "memories", "field": "items"}, "columns": [
+        {"field": "id", "label": "编号"}, {"field": "scope", "label": "可见场景"},
+        {"field": "author", "label": "发送者"}, {"field": "text", "label": "记忆内容"},
+        {"field": "kind", "label": "类型"}, {"field": "status", "label": "状态"}
+      ]}
+    ]
+  }]
+}

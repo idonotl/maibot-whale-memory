@@ -1,0 +1,39 @@
+{
+  "manifest_version": 2,
+  "id": "local.whale-memory",
+  "version": "0.1.1",
+  "name": "鱼的记忆 · 麦麦适配试用",
+  "description": "独立麦麦适配版：中文词法召回、记忆衰减、场景隔离；不使用嵌入模型",
+  "author": {
+    "name": "idonotl",
+    "url": "https://github.com/idonotl"
+  },
+  "license": "MIT",
+  "urls": {
+    "repository": "https://github.com/idonotl/maibot-whale-memory",
+    "homepage": "https://github.com/idonotl/maibot-whale-memory",
+    "documentation": "https://github.com/idonotl/maibot-whale-memory/blob/main/README.md",
+    "issues": "https://github.com/idonotl/maibot-whale-memory/issues"
+  },
+  "host_application": {
+    "min_version": "1.3.15",
+    "max_version": "1.3.19"
+  },
+  "sdk": {
+    "min_version": "2.16.0",
+    "max_version": "2.99.99"
+  },
+  "plugin_type": "data",
+  "dependencies": [],
+  "capabilities": [
+    "message.get_by_id",
+    "message.get_by_time_in_chat",
+    "llm.generate"
+  ],
+  "i18n": {
+    "default_locale": "zh-CN",
+    "supported_locales": [
+      "zh-CN"
+    ]
+  }
+}
