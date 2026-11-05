@@ -13,6 +13,8 @@ class Settings(PluginConfigBase):
     max_items: int = Field(default=6, ge=1, le=10, description="每次召回条数上限")
     max_chars: int = Field(default=800, ge=200, le=2000, description="召回数据字数上限")
     extraction_interval: int = Field(default=120, ge=30, le=600, description="同一场景同一人自动提炼间隔秒")
+    reflection_enabled: bool = Field(default=True, description="后台复盘明确的长期交流偏好；不修改固定人格或权限")
+    reflection_daily_limit: int = Field(default=4, ge=1, le=12, description="每个场景每人每天交流偏好新增或修订次数，独立于普通记忆预算")
     webui_test_prefix: str = Field(default="memory-acceptance-", description="隔离验收身份前缀；清空可禁用")
 
 

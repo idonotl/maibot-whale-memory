@@ -112,7 +112,8 @@ class Store:
             return cur.rowcount == 1
 
     def save(self, scope: str, author: str, memories: list[dict], source_id: str,
-             daily_limit: int = 8, now: float | None = None, source_stamp: float | None = None) -> int:
+             daily_limit: int = 8, now: float | None = None, source_stamp: float | None = None,
+             budget_kind: str | None = None) -> int:
         now = time.time() if now is None else now
         day = datetime.fromtimestamp(now, CN_TIME).date().isoformat()
         count = 0
@@ -121,8 +122,12 @@ class Store:
             cutoff = c.execute("SELECT at FROM forget_epochs WHERE scope=? AND author=?", (scope, author)).fetchone()
             if cutoff and (source_stamp if source_stamp is not None else now) <= cutoff[0]:
                 return 0
-            used = c.execute("SELECT COUNT(*) FROM memories WHERE scope=? AND author=? AND day=?",
-                             (scope, author, day)).fetchone()[0]
+            if budget_kind:
+                used = c.execute("SELECT COUNT(*) FROM memories WHERE scope=? AND author=? AND day=? AND kind=?",
+                                 (scope, author, day, budget_kind)).fetchone()[0]
+            else:
+                used = c.execute("SELECT COUNT(*) FROM memories WHERE scope=? AND author=? AND day=? AND kind!='interaction'",
+                                 (scope, author, day)).fetchone()[0]
             for m in memories:
                 digest = hashlib.sha256(m["text"].encode()).hexdigest()
                 if c.execute("SELECT 1 FROM memories WHERE scope=? AND author=? AND digest=? AND status='active'",
@@ -150,7 +155,7 @@ class Store:
         if not q:
             return []
         with self.lock, self.connect() as c:
-            rows = [dict(r) for r in c.execute("SELECT * FROM memories WHERE scope=? AND status='active' ORDER BY id DESC LIMIT 3000", (scope,))]
+            rows = [dict(r) for r in c.execute("SELECT * FROM memories WHERE scope=? AND status='active' AND kind!='interaction' ORDER BY id DESC LIMIT 3000", (scope,))]
             # "我" queries must not turn another group member's preference into this user's.
             if author and re.search(r"我|本人", query):
                 rows = [r for r in rows if r["author"] == author]
@@ -192,7 +197,7 @@ class Store:
         with self.lock, self.connect() as c:
             c.execute("INSERT INTO forget_epochs VALUES(?,?,?) ON CONFLICT(scope,author) DO UPDATE SET at=excluded.at",
                       (scope, author, time.time()))
-            ids = [r["id"] for r in c.execute("SELECT id,text,quote FROM memories WHERE scope=? AND author=?", (scope, author)) if keyword in r["text"] or keyword in r["quote"]]
+            ids = [r["id"] for r in c.execute("SELECT id,text,quote,fact_key FROM memories WHERE scope=? AND author=?", (scope, author)) if any(keyword in r[k] for k in ('text','quote','fact_key'))]
             # Explicit forgetting removes the content, unlike passive decay.
             for mid in ids:
                 c.execute("DELETE FROM recalls WHERE memory_id=?", (mid,))
@@ -203,6 +208,15 @@ class Store:
         with self.connect() as c:
             return [dict(r) for r in c.execute("SELECT scope,status,COUNT(*) AS count FROM memories GROUP BY scope,status")]
 
+    def preferences(self, scope, author, query, limit=3):
+        with self.connect() as c:
+            rows = [dict(r) for r in c.execute(
+                "SELECT * FROM memories WHERE scope=? AND author=? AND kind='interaction' AND status='active' ORDER BY id DESC",
+                (scope, author))]
+        # Comfort preferences are useful when the current conversation needs them.
+        return [r for r in rows if r['fact_key'] != '互动偏好:安慰方式'
+                or re.search(r'伤心|难过|难受|委屈|想哭|安慰|心情|烦|累|失落', query)][:limit]
+
     def list_recent(self):
         with self.connect() as c:
-            return [dict(r) for r in c.execute("SELECT id,scope,author,text,kind,status,created FROM memories ORDER BY id DESC LIMIT 100")]
+            return [dict(r) for r in c.execute("SELECT id,scope,author,text,quote,source_id,fact_key,kind,status,created FROM memories ORDER BY id DESC LIMIT 100")]
