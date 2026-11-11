@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "id": "local.whale-memory",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "name": "鱼的记忆 · 麦麦适配试用",
   "description": "独立麦麦适配版：中文词法召回、记忆衰减、场景隔离；不使用嵌入模型",
   "author": {

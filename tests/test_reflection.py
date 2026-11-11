@@ -98,7 +98,9 @@ class WiringTests(unittest.IsolatedAsyncioTestCase):
         from pathlib import Path
         self.tmp=TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.plugin=p.create_plugin()
-        self.plugin.set_plugin_config({'plugin':{'enabled':True,'config_version':'0.1.0'}})
+        # reflection_enabled 显式打开：公开仓库导出的默认值是关闭，
+        # 依赖本机默认值的断言在发布树里会整片失败。
+        self.plugin.set_plugin_config({'plugin':{'enabled':True,'config_version':'0.1.0','reflection_enabled':True}})
         self.llm=SimpleNamespace(generate=AsyncMock())
         self.plugin._ctx=SimpleNamespace(paths=SimpleNamespace(data_dir=Path(self.tmp.name)),llm=self.llm,logger=__import__('logging').getLogger('test'))
         await self.plugin.on_load()
